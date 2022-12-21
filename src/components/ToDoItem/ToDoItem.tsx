@@ -1,18 +1,40 @@
 import React from 'react';
+import {TaskMutation} from "../../types";
+import {fetchTasks, removeTask, updateStatus} from "../../containers/ToDoList/toDoThunks";
+import {useAppDispatch, useAppSelector} from "../../app/hooks";
+import ButtonSpinner from "../Spinner/ButtonSpinner";
 
 interface Props {
-  name: string;
-  remove: React.MouseEventHandler;
+  task: TaskMutation;
 }
 
-const ToDoItem: React.FC<Props> = (props) => {
+const ToDoItem: React.FC<Props> = ({task}) => {
+
+  const dispatch = useAppDispatch();
+  const removeLoading = useAppSelector((state) => state.tasks.removeLoading);
+
+  const checkStatus = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await dispatch(updateStatus({id: task.id, task: {...task, done: e.target.checked}}));
+    await dispatch(fetchTasks());
+  };
+
+  const remove = async (id: string) => {
+    await dispatch(removeTask(id));
+    await dispatch(fetchTasks());
+  };
+
   return (
     <div className="input-group mb-3">
       <div className="input-group-text">
-        <input className="form-check-input" type="checkbox" value=""/>
+        <input
+          className="form-check-input" type="checkbox"
+          onChange={checkStatus} checked={task.done}
+        />
       </div>
-      <h1 className="form-control">{props.name}</h1>
-      <button onClick={props.remove}>Delete</button>
+      <span className="form-control">{task.task}</span>
+      <button className="btn btn-primary" onClick={() => remove(task.id)}>
+        {removeLoading === 'pending' ? <ButtonSpinner/> : 'Delete'}
+      </button>
     </div>
   );
 };

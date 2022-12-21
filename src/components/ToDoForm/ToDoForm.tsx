@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import {Task} from "../../types";
-import {useAppDispatch} from "../../app/hooks";
-import {createTask} from "../../containers/ToDoList/toDoThunks";
+import {useAppDispatch, useAppSelector} from "../../app/hooks";
+import {createTask, fetchTasks} from "../../containers/ToDoList/toDoThunks";
+import ButtonSpinner from "../Spinner/ButtonSpinner";
 
 const ToDoForm = () => {
   const [toDoForm, setToDoForm] = useState<Task>({
@@ -11,14 +12,21 @@ const ToDoForm = () => {
 
   const dispatch = useAppDispatch();
 
+  const formLoading = useAppSelector((state) => state.tasks.formLoading);
+
   const formChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {value} = e.target;
     setToDoForm(prev => ({...prev, task: value}));
   };
 
-  const onFormSubmit = (e: React.FormEvent) => {
+  const onFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(createTask(toDoForm));
+    await dispatch(createTask(toDoForm));
+    await dispatch(fetchTasks());
+    setToDoForm({
+      task: '',
+      done: false,
+    });
   };
 
   return (
@@ -35,7 +43,7 @@ const ToDoForm = () => {
           disabled={toDoForm.task === ''}
           type="submit" className="btn btn-primary my-4"
         >
-          Add
+          {formLoading === 'pending' ? <ButtonSpinner/> : 'Add'}
         </button>
       </div>
     </form>

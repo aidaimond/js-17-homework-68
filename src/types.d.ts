@@ -3,9 +3,7 @@ export interface Task {
   done: boolean;
 }
 
-export interface TaskId {
-  task: string;
-  done: boolean;
+export interface TaskMutation extends Task{
   id: string;
 }
 
